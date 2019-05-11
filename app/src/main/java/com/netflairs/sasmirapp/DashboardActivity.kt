@@ -8,6 +8,9 @@ import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.net.Uri
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
@@ -48,6 +51,7 @@ class DashboardActivity : BaseActivity() {
     private val PERMISSION_REQUEST_CODE: Int = 101
 
     private var mCurrentPhotoPath: String? = null;
+    @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
@@ -62,9 +66,9 @@ class DashboardActivity : BaseActivity() {
                 val mainIntent = Intent(this, TaskListActivity::class.java)
                 startActivity(mainIntent)
             }ivlIST.id->{
-                val mainIntent = Intent(this, TaskListActivity::class.java)
-                startActivity(mainIntent)
-            }
+            val mainIntent = Intent(this, TaskListActivity::class.java)
+            startActivity(mainIntent)
+        }
 
         }
     }
@@ -86,6 +90,7 @@ class DashboardActivity : BaseActivity() {
         ActivityCompat.requestPermissions(this, arrayOf(READ_EXTERNAL_STORAGE, CAMERA),
             PERMISSION_REQUEST_CODE)
     }
+    @SuppressLint("MissingPermission")
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         when (requestCode) {
             PERMISSION_REQUEST_CODE -> {
@@ -109,7 +114,7 @@ class DashboardActivity : BaseActivity() {
                         grantResults.isEmpty() -> Log.i(TAG, "User interaction was cancelled.")
 
                         // Permission granted.
-                        (grantResults[0] == PackageManager.PERMISSION_GRANTED) -> getLastLocation()
+                        (grantResults[0] == PackageManager.PERMISSION_GRANTED) -> getLastLocation();
 
                         // Permission denied.
 
@@ -182,6 +187,7 @@ class DashboardActivity : BaseActivity() {
         startActivityForResult(intent, REQUEST_IMAGE_CAPTURE)
 
     }
+    @SuppressLint("MissingPermission")
     override fun onStart() {
         super.onStart()
 
@@ -191,6 +197,11 @@ class DashboardActivity : BaseActivity() {
             getLastLocation()
         }
     }
+
+
+
+
+
 
     /**
      * Provides a simple way of getting a device's location and is well suited for
@@ -202,21 +213,32 @@ class DashboardActivity : BaseActivity() {
      */
     @SuppressLint("MissingPermission")
     private fun getLastLocation() {
-        fusedLocationClient.lastLocation
-            .addOnCompleteListener(this) { task ->
-                if (task.isSuccessful && task.result != null) {
-                   /* latitudeText.text = resources
-                        .getString(R.string.latitude_label, task.result.latitude)
-                    longitudeText.text = resources
-                        .getString(R.string.longitude_label, task.result.longitude)*/
-                    Toast.makeText(this,"Latitude: "+ task.result!!.latitude+"   Longitude: "+ task.result!!.longitude,Toast.LENGTH_LONG).show()
-                   // Toast.makeText(this,"Longitude"+ task.result!!.longitude,Toast.LENGTH_LONG).show()
 
-                } else {
-                    Log.w(TAG, "getLastLocation:exception", task.exception)
-                    showSnackbar(R.string.no_location_detected)
-                }
-            }
+        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
+            var latitude = location?.latitude
+            var longitude = location?.longitude
+
+            if (latitude!=null&&longitude!=null) Toast.makeText(this,"Latitude: "+ latitude+"   Longitude: "+ longitude,Toast.LENGTH_LONG).show()
+            else showSnackbar(R.string.no_location_detected)
+
+
+        }
+
+//        fusedLocationClient.lastLocation.addOnCompleteListener(this) { task ->
+//                if (task.isSuccessful && task.result != null) {
+//                   /* latitudeText.text = resources
+//                        .getString(R.string.latitude_label, task.result.latitude)
+//                    longitudeText.text = resources
+//                        .getString(R.string.longitude_label, task.result.longitude)*/
+//
+//                    Toast.makeText(this,"Latitude: "+ task.result!!.latitude+"   Longitude: "+ task.result!!.longitude,Toast.LENGTH_LONG).show()
+//                   // Toast.makeText(this,"Longitude"+ task.result!!.longitude,Toast.LENGTH_LONG).show()
+//
+//                } else {
+//                    Log.w(TAG, "getLastLocation:exception", task.exception)
+//                    showSnackbar(R.string.no_location_detected)
+//                }
+//            }
     }
 
     /**
@@ -243,15 +265,15 @@ class DashboardActivity : BaseActivity() {
      * Return the current state of the permissions needed.
      */
     private fun checkPermissions() =
-        ActivityCompat.checkSelfPermission(this, ACCESS_COARSE_LOCATION) == PERMISSION_GRANTED
+        ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PERMISSION_GRANTED
 
     private fun startLocationPermissionRequest() {
-        ActivityCompat.requestPermissions(this, arrayOf(ACCESS_COARSE_LOCATION),
+        ActivityCompat.requestPermissions(this, arrayOf(ACCESS_FINE_LOCATION),
             REQUEST_PERMISSIONS_REQUEST_CODE)
     }
 
     private fun requestPermissions() {
-        if (ActivityCompat.shouldShowRequestPermissionRationale(this, ACCESS_COARSE_LOCATION)) {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, ACCESS_FINE_LOCATION)) {
             // Provide an additional rationale to the user. This would happen if the user denied the
             // request previously, but didn't check the "Don't ask again" checkbox.
             Log.i(TAG, "Displaying permission rationale to provide additional context.")
