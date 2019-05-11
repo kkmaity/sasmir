@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:id="@+id/card_main"
+                                    android:layout_marginRight="10dp"
+                                    android:layout_marginLeft="10dp"
+                                    android:layout_marginTop="5dp"
+                                    android:layout_marginBottom="5dp"
+
+>
+    <RelativeLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
+    >
+        <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:paddingLeft="10dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="4dp"
+                android:paddingRight="10dp"
+                android:fontFamily="@font/raleway_heavy"
+                android:text="Task Sample Title"
+                android:textColor="@color/txt_grey"
+                android:textAllCaps="true"
+        />
+        <TextView
+                android:id="@+id/tvDescription"
+                android:layout_below="@+id/tvTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:paddingLeft="10dp"
+                android:paddingTop="4dp"
+                android:paddingBottom="4dp"
+                android:paddingRight="10dp"
+                android:text="Lorem ipsum, or lipsum as it is sometimes known, is dummy text used in laying out print, graphic or web designs. The passage is attributed to an.... "
+                android:textColor="@color/txt_grey"
+        />
+        
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                  android:text="View Details"
+                  android:id="@+id/tvDetails"
+                  android:layout_margin="10dp"
+                  android:layout_alignParentRight="true"
+                  android:layout_below="@+id/tvDescription"
+                  android:background="@drawable/rounded_corner_bg"
+                  android:paddingLeft="30dp"
+                  android:paddingRight="30dp"
+                  android:clickable="true"
+                  android:textColor="@color/colorPrimary"
+                  android:focusable="true"
+                  android:textSize="15sp"
+                  android:foreground="?android:attr/selectableItemBackground"
+                  android:paddingTop="6dp"
+                  android:paddingBottom="6dp"/>
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>
