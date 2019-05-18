@@ -1,8 +1,12 @@
 package com.netflairs.sasmirapp
 
+import android.Manifest
 import android.Manifest.permission.*
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlertDialog
+import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.PackageManager.PERMISSION_GRANTED
@@ -26,8 +30,12 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.api.GoogleApiClient
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.OnSuccessListener
 import com.netflairs.sasmirapp.BuildConfig.APPLICATION_ID
 import kotlinx.android.synthetic.main.activity_dashboard.*
 import java.io.File
@@ -35,7 +43,21 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.*
 
-class DashboardActivity : BaseActivity() {
+class DashboardActivity : BaseActivity(), GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, com.google.android.gms.location.LocationListener {
+
+
+
+    private lateinit var mGoogleApiClient: GoogleApiClient
+    private var mLocationManager: LocationManager? = null
+    lateinit var mLocation: Location
+    private var mLocationRequest: LocationRequest? = null
+    private val listener: com.google.android.gms.location.LocationListener? = null
+    private val UPDATE_INTERVAL = (2 * 1000).toLong()  /* 10 secs */
+    private val FASTEST_INTERVAL: Long = 2000 /* 2 sec */
+
+    lateinit var locationManager: LocationManager
+
+
     val REQUEST_IMAGE_CAPTURE = 1
     private val TAG = "MainActivity"
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 34
@@ -58,7 +80,17 @@ class DashboardActivity : BaseActivity() {
         submit.setOnClickListener(clickListener)
         ivlIST.setOnClickListener(clickListener)
         imageView.setOnClickListener(clickListenerImage)
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+//        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+
+        mGoogleApiClient = GoogleApiClient.Builder(this)
+            .addConnectionCallbacks(this)
+            .addOnConnectionFailedListener(this)
+            .addApi(LocationServices.API)
+            .build()
+
+        mLocationManager = this.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
     }
     private val clickListener: View.OnClickListener = View.OnClickListener { view ->
         when(view.id) {
@@ -114,7 +146,8 @@ class DashboardActivity : BaseActivity() {
                         grantResults.isEmpty() -> Log.i(TAG, "User interaction was cancelled.")
 
                         // Permission granted.
-                        (grantResults[0] == PackageManager.PERMISSION_GRANTED) -> getLastLocation();
+                        (grantResults[0] == PackageManager.PERMISSION_GRANTED) ->        startLocationUpdates()
+
 
                         // Permission denied.
 
@@ -187,14 +220,25 @@ class DashboardActivity : BaseActivity() {
         startActivityForResult(intent, REQUEST_IMAGE_CAPTURE)
 
     }
-    @SuppressLint("MissingPermission")
+
+
     override fun onStart() {
         super.onStart()
+
 
         if (!checkPermissions()) {
             requestPermissions()
         } else {
-            getLastLocation()
+            if (mGoogleApiClient != null) {
+                mGoogleApiClient.connect();
+            }
+        }
+    }
+
+    override fun onStop() {
+        super.onStop();
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
         }
     }
 
@@ -264,8 +308,7 @@ class DashboardActivity : BaseActivity() {
     /**
      * Return the current state of the permissions needed.
      */
-    private fun checkPermissions() =
-        ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PERMISSION_GRANTED
+    private fun checkPermissions() = ActivityCompat.checkSelfPermission(this, ACCESS_FINE_LOCATION) == PERMISSION_GRANTED
 
     private fun startLocationPermissionRequest() {
         ActivityCompat.requestPermissions(this, arrayOf(ACCESS_FINE_LOCATION),
@@ -290,6 +333,73 @@ class DashboardActivity : BaseActivity() {
             startLocationPermissionRequest()
         }
     }
+
+
+
+
+    protected fun startLocationUpdates() {
+
+        // Create the location request
+        mLocationRequest = LocationRequest.create()
+            .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+            .setInterval(UPDATE_INTERVAL)
+            .setFastestInterval(FASTEST_INTERVAL);
+        // Request location updates
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
+            mLocationRequest, this);
+    }
+
+    override fun onConnectionSuspended(p0: Int) {
+
+        Log.i(TAG, "Connection Suspended");
+        mGoogleApiClient.connect();
+    }
+
+    override fun onConnectionFailed(connectionResult: ConnectionResult) {
+        Log.i(TAG, "Connection failed. Error: " + connectionResult.getErrorCode());
+    }
+
+    override fun onLocationChanged(location: Location) {
+
+
+        var msg = "Updated Location: Latitude " + location.longitude.toString() + location.longitude;
+
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+
+
+    }
+
+    override fun onConnected(p0: Bundle?) {
+
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            return;
+        }
+
+
+        startLocationUpdates();
+
+        var fusedLocationProviderClient :
+                FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+        fusedLocationProviderClient .getLastLocation()
+            .addOnSuccessListener(this, OnSuccessListener<Location> { location ->
+                // Got last known location. In some rare situations this can be null.
+                if (location != null) {
+                    // Logic to handle location object
+                    mLocation = location;
+
+                    var msg = "Updated Location: Latitude " + location.longitude.toString() + location.longitude;
+
+                    Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+                }
+            })
+    }
+
+
+
 
 
 }

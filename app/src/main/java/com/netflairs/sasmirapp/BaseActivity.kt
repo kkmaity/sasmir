@@ -13,8 +13,8 @@ import android.location.LocationManager
 open class BaseActivity : AppCompatActivity(){
 
 
-    protected var locationManager: LocationManager? = null
-    protected var locationListener: LocationListener? = null
+/*    protected var locationManager: LocationManager? = null
+    protected var locationListener: LocationListener? = null*/
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
