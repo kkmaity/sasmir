@@ -31,4 +31,5 @@ object Constants {
     const val RESULT_DATA_KEY = "$PACKAGE_NAME.RESULT_DATA_KEY"
 
     const val LOCATION_DATA_EXTRA = "$PACKAGE_NAME.LOCATION_DATA_EXTRA"
+    const val  BASE_URL="https://sasmir.vtcrmservices.com/"
 }
