@@ -24,6 +24,7 @@ class LoginActivity : BaseActivity() {
         setContentView(R.layout.activity_login)
         cardLogin.setOnClickListener(clickListener)
         progress=ProgressDialog(this);
+        progress!!.setMessage("Loading...")
     }
 
     private val clickListener: View.OnClickListener = View.OnClickListener { view ->
@@ -82,7 +83,7 @@ class LoginActivity : BaseActivity() {
 
     }
      fun showError() {
-        Toast.makeText(this, "Some Error!", Toast.LENGTH_LONG).show()
+        Toast.makeText(this, "Something went wrong!", Toast.LENGTH_LONG).show()
     }
     fun callNextScreen(){
         val mainIntent = Intent(this, DashboardActivity::class.java)

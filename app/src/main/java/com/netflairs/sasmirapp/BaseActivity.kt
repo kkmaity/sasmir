@@ -16,6 +16,9 @@ open class BaseActivity : AppCompatActivity(){
     protected var locationManager: LocationManager? = null
     protected var locationListener: LocationListener? = null
     var preference: Preference? = null
+
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         preference = Preference(this@BaseActivity)
